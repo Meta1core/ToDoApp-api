@@ -1,0 +1,21 @@
+﻿@model ToDoApp.Models.ToDoTask
+@{
+    ViewBag.Title = "Create";
+}
+
+<h2>Create</h2>
+
+@using (Html.BeginForm())
+{
+    <form>
+        <div class="form-group">
+            <label for="todotask">Body of your task</label>
+            <input type="text" class="form-control" name="description" placeholder="Input task text, please" required>
+        </div>
+        <div class="form-group">
+            <input type="date" name="date" required>
+            <input type="time" name="time">
+        </div>
+        <button type="submit" value="Create" class="btn btn-info">Submit</button>
+    </form>
+}

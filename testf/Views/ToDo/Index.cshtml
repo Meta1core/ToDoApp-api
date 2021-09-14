@@ -1,0 +1,71 @@
+﻿@model IEnumerable<ToDoApp.Models.ToDoTask>
+@{
+    ViewBag.Title = "Index";
+}
+<body>
+    <h2>@DateTime.Now</h2>
+
+    <p>
+        @Html.ActionLink("Create New", "Create")
+    </p>
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.User.UserName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Status)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateOfTask)
+                </td>
+
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                    @Html.ActionLink("Details", "Details", new { id = item.Id }) |
+                    @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+                </td>
+            </tr>
+        }
+    </table>
+        @foreach (var item in Model)
+        {
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center" onclick="@("window.location.href='" + @Url.Action("Edit", "ToDo", new { id = item.Id }) + "'");">
+                    <span class="badge rounded-pill bg-info text-dark">@item.DateOfTask</span> @Html.DisplayFor(modelItem => item.Description)
+                    @if (item.Status)
+                    {
+                        <span class="badge badge-success">Done</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-danger">Not done</span>
+                    }
+                </li>
+            </ul>
+        }
+</body>
