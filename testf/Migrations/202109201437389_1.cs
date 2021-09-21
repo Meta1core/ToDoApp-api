@@ -265,7 +265,7 @@ namespace ToDoApp.Migrations
                     User_Id = p.String(maxLength: 128, unicode: false),
                 },
                 body:
-                    @"DELETE FROM `ToDoTask` WHERE todotask.Id = Id;"
+                    @"UPDATE todotask SET todotask.IsOverdue = 0 WHERE todotask.IsDone LIKE (0) AND NOW() < todotask.DateOfTask AND todotask.User_Id = User_Id AND todotask.DateOfTask IS NOT NULL; SELECT * FROM todotask WHERE todotask.User_Id = User_Id;"
             );
 
 
