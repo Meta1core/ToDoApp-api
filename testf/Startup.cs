@@ -25,6 +25,8 @@ namespace ToDoApp
             app.CreatePerOwinContext<ApplicationUserManager>(ApplicationUserManager.Create);
             app.CreatePerOwinContext<ApplicationSignInManager>(ApplicationSignInManager.Create);
 
+            app.MapSignalR();
+
             HttpConfiguration config = new HttpConfiguration();
 
             ConfigureOAuth(app);

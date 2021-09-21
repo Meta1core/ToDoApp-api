@@ -15,10 +15,11 @@ using ToDoApp.Providers;
 using ToDoApp.Models;
 using System.Data.Entity;
 using MySql.Data.MySqlClient;
+using ToDoApp.Hubs;
 
 namespace ToDoApp.Controllers
 {
-    public class TasksController : ApiController
+    public class TasksController : EntitySetControllerWithHub<TasksHub>
     {
         ApplicationDbContext DbContext = new ApplicationDbContext();
 
@@ -71,6 +72,7 @@ namespace ToDoApp.Controllers
             {
                 MySqlParameter param = new MySqlParameter("@User_Id", user.Id);
                 List<ToDoTask> toDoTasks = DbContext.Tasks.SqlQuery("Call ToDoTask_GetOverdueList(@User_Id)", param).ToList();
+                Hub.Clients.All.sendNotification();
                 return Request.CreateResponse(HttpStatusCode.OK, toDoTasks);
             }
             return new HttpResponseMessage(HttpStatusCode.BadRequest);
@@ -122,7 +124,26 @@ namespace ToDoApp.Controllers
             };
             DbContext.Tasks.Add(toDoTask);
             DbContext.SaveChanges();
+
+            Hub.Clients.All.sendNotification();
+
             return new HttpResponseMessage(HttpStatusCode.Created);
+        }
+
+        [HttpGet]
+        [CustomAuthorization]
+        [Route("api/tasks/indirectory/{directoryId}")]
+        public HttpResponseMessage GetTasksInDirectory(int directoryId)
+        {
+            ApplicationUser user = GetCurrentUser();
+            if (!(user is null))
+            {
+                MySqlParameter userIdParam = new MySqlParameter("@User_Id", user.Id);
+                MySqlParameter  directoryIdParam = new MySqlParameter("@Directory_Id", directoryId);
+                List<ToDoTask> toDoTasksInDirectory = DbContext.Tasks.SqlQuery("Call ToDoTask_TasksInDirectory(@User_Id, @Directory_Id)", userIdParam, directoryIdParam).ToList();
+                return Request.CreateResponse(HttpStatusCode.OK, toDoTasksInDirectory);
+            }
+            return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
 
         [HttpPut]
@@ -138,6 +159,8 @@ namespace ToDoApp.Controllers
             toDoTask.Directory = DbContext.Directories.Where(d => d.Id == updatingTaskModel.Directory_Id).FirstOrDefault();
             DbContext.Entry(toDoTask).State = EntityState.Modified;
             DbContext.SaveChanges();
+
+            Hub.Clients.All.sendNotification();
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
 
@@ -153,6 +176,9 @@ namespace ToDoApp.Controllers
                 DbContext.Tasks.Attach(toDoTask);
                 DbContext.Tasks.Remove(toDoTask);
                 DbContext.SaveChanges();
+
+
+                Hub.Clients.All.sendNotification();
                 return new HttpResponseMessage(HttpStatusCode.NoContent);
             }
             return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Incorrect request");

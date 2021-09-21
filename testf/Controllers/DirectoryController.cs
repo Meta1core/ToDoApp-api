@@ -9,20 +9,37 @@ using System.Web.Http;
 using ToDoApp.Models;
 using ToDoApp.Providers;
 using ToDoApp.Models.DTO;
+using Microsoft.AspNet.SignalR;
+using ToDoApp.Hubs;
 
 namespace ToDoApp.Controllers
 {
     [RoutePrefix("api/directory")]
-    public class DirectoryController : ApiController
+    public class DirectoryController : EntitySetControllerWithHub<TasksHub>
     {
-        ApplicationDbContext dbContext = new ApplicationDbContext();
+        ApplicationDbContext DbContext = new ApplicationDbContext();
 
         [CustomAuthorization]
         public List<Directory> Get()
         {
             ApplicationUser user = GetCurrentUser();
-            var tasks = dbContext.Directories.Where(t => t.User.Id == user.Id).ToList();
-            return tasks.ToList();
+            var directories = DbContext.Directories.Where(t => t.User.Id == user.Id).ToList();
+            return directories.ToList();
+        }
+
+        [CustomAuthorization]
+        public HttpResponseMessage Delete(int id)
+        {
+            Directory directory = DbContext.Directories.Find(IsRequestCorrect(id));
+            if (!(directory is null))
+            {
+                DbContext.Directories.Attach(directory);
+                DbContext.Directories.Remove(directory);
+                DbContext.SaveChanges();
+                Hub.Clients.All.sendNotification();
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            }
+            return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Incorrect request");
         }
 
         [HttpPost]
@@ -32,8 +49,9 @@ namespace ToDoApp.Controllers
             if (!String.IsNullOrEmpty(addingDirectoryModel.directoryName))
             {
                 Directory directory = new Directory() { DirectoryName = addingDirectoryModel.directoryName, User = GetCurrentUser() };
-                dbContext.Directories.Add(directory);
-                dbContext.SaveChanges();
+                DbContext.Directories.Add(directory);
+                DbContext.SaveChanges();
+                Hub.Clients.All.sendNotification();
                 return new HttpResponseMessage(HttpStatusCode.Created);
             }
             return new HttpResponseMessage(HttpStatusCode.BadRequest);
@@ -49,8 +67,26 @@ namespace ToDoApp.Controllers
             {
                 email = claim.Value;
             }
-            ApplicationUser user = dbContext.Users.Where(t => t.UserName == email).First();
+            ApplicationUser user = DbContext.Users.Where(t => t.UserName == email).First();
             return user;
+        }
+
+        public int? IsRequestCorrect(int? id)
+        {
+            if (DbContext.Directories.Find(id) is null)
+            {
+                return null;
+            }
+            if (id == null)
+            {
+                return null;
+            }
+            ApplicationUser currentUser = GetCurrentUser();
+            if (DbContext.Directories.Find(id).User.Id != currentUser.Id)
+            {
+                return null;
+            }
+            return id;
         }
     }
 

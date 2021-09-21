@@ -17,7 +17,6 @@ namespace ToDoApp.Models
 
         public bool IsFavorite { get; set; }
 
-
         public virtual ApplicationUser User { get; set; }
 
         [DefaultValue("true")]
