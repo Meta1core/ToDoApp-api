@@ -14,4 +14,4 @@ MySql 5.6
 
 .Net Framework 4.5.2
 
-Implemented JWT(Oauth2) and SignalR(real-time) functionality
+Implemented JWT and SignalR(real-time) functionality
