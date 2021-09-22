@@ -1,4 +1,4 @@
-﻿ using Microsoft.AspNet.SignalR;
+﻿using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,8 @@ using ToDoApp.Models;
 namespace ToDoApp.Controllers
 {
     public class EntitySetControllerWithHub<THub> : ApiController
-        where THub : IHub {
+        where THub : IHub
+    {
         Lazy<IHubContext> hub = new Lazy<IHubContext>(
             () => GlobalHost.ConnectionManager.GetHubContext<THub>()
             );

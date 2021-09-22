@@ -139,7 +139,7 @@ namespace ToDoApp.Controllers
             if (!(user is null))
             {
                 MySqlParameter userIdParam = new MySqlParameter("@User_Id", user.Id);
-                MySqlParameter  directoryIdParam = new MySqlParameter("@Directory_Id", directoryId);
+                MySqlParameter directoryIdParam = new MySqlParameter("@Directory_Id", directoryId);
                 List<ToDoTask> toDoTasksInDirectory = DbContext.Tasks.SqlQuery("Call ToDoTask_TasksInDirectory(@User_Id, @Directory_Id)", userIdParam, directoryIdParam).ToList();
                 return Request.CreateResponse(HttpStatusCode.OK, toDoTasksInDirectory);
             }
