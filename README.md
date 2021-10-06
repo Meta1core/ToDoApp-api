@@ -1,4 +1,7 @@
 # todo-app-api
+
+
+if you want to clone this app:
 Running on https://localhost:44370/
 
 Create a new database "todoapp" in MySql client. After that, migrate tables and stored procedures by command "update-database" at the Nuget Package Console
