@@ -19,7 +19,6 @@ namespace ToDoApp.Models
 
         public virtual ApplicationUser User { get; set; }
 
-        [DefaultValue("true")]
         public virtual Directory Directory { get; set; }
 
         public bool IsDone { get; set; }
