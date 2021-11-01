@@ -150,18 +150,37 @@ namespace ToDoApp.Controllers
         [CustomAuthorization]
         public HttpResponseMessage Put([FromBody] UpdatingTaskModel updatingTaskModel)
         {
-            ToDoTask toDoTask = DbContext.Tasks.FirstOrDefault(t => t.Id == updatingTaskModel.Id);
-            toDoTask.Header = updatingTaskModel.Header;
-            toDoTask.Description = updatingTaskModel.Description;
-            toDoTask.IsFavorite = updatingTaskModel.IsFavorite;
-            toDoTask.IsDone = updatingTaskModel.IsDone;
-            toDoTask.DateOfTask = updatingTaskModel.DateOfTask;
-            toDoTask.Directory = DbContext.Directories.Where(d => d.Id == updatingTaskModel.Directory_Id).FirstOrDefault();
-            DbContext.Entry(toDoTask).State = EntityState.Modified;
-            DbContext.SaveChanges();
+            ApplicationUser user = GetCurrentUser();
+            if (!(user is null))
+            {
+                ToDoTask toDoTask = DbContext.Tasks.FirstOrDefault(t => t.Id == updatingTaskModel.Id);
+                MySqlParameter taskIdParam = new MySqlParameter("@Id", toDoTask.Id);
+                MySqlParameter userIdParam = new MySqlParameter("@User_Id", user.Id);
+                MySqlParameter directoryIdParam = new MySqlParameter("@Directory_Id", updatingTaskModel.Directory_Id);
+                MySqlParameter headerParam = new MySqlParameter("@Header", updatingTaskModel.Header);
+                MySqlParameter descriptionParam = new MySqlParameter("@Description", updatingTaskModel.Description);
+                MySqlParameter isDoneParam = new MySqlParameter("@IsDone", updatingTaskModel.IsDone);
+                MySqlParameter isFavoriteParam = new MySqlParameter("@IsFavorite", updatingTaskModel.IsFavorite);
+                MySqlParameter dateOfTaskParam = new MySqlParameter("@DateOfTask", updatingTaskModel.DateOfTask);
+                //toDoTask.Header = updatingTaskModel.Header;
+                //toDoTask.Description = updatingTaskModel.Description;
+                //toDoTask.IsFavorite = updatingTaskModel.IsFavorite;
+                //toDoTask.IsDone = updatingTaskModel.IsDone;
+                //toDoTask.DateOfTask = updatingTaskModel.DateOfTask;
+                //if (!updatingTaskModel.Directory_Id.Equals(0))
+                //{
+                //    toDoTask.Directory = DbContext.Directories.Where(d => d.Id == updatingTaskModel.Directory_Id).FirstOrDefault();
+                //}
+                //else
+                //{
+                //    toDoTask.Directory.Id = 0;
+                //}
+                DbContext.Database.ExecuteSqlCommand("Call ToDoTask_Update(@Id, @User_Id, @Directory_Id, @Header, @Description, @IsDone, @IsFavorite, @DateOfTask)", taskIdParam, userIdParam, directoryIdParam, headerParam, descriptionParam, isDoneParam, isFavoriteParam, dateOfTaskParam);
 
-            Hub.Clients.All.sendNotification();
-            return new HttpResponseMessage(HttpStatusCode.OK);
+                Hub.Clients.All.sendNotification();
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+            return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
 
         // DELETE api/<controller>/5
