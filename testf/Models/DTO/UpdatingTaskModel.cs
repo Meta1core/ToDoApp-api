@@ -18,6 +18,8 @@ namespace ToDoApp.Models
 
         public bool IsDone { get; set; }
 
+        public bool IsOverdue { get; set; }
+
         public int Directory_Id { get; set; }
     }
 }
