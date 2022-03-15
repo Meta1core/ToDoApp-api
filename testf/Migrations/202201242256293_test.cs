@@ -1,9 +1,8 @@
-namespace ToDoApp.Migrations
+﻿namespace ToDoApp.Migrations
 {
-    using System;
     using System.Data.Entity.Migrations;
 
-    public partial class _1 : DbMigration
+    public partial class test : DbMigration
     {
         public override void Up()
         {
@@ -106,7 +105,6 @@ namespace ToDoApp.Migrations
                 .ForeignKey("dbo.AspNetUsers", t => t.User_Id)
                 .Index(t => t.Directory_Id)
                 .Index(t => t.User_Id);
-
             CreateStoredProcedure(
                 "dbo.Directory_Insert",
                 p => new

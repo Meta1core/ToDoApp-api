@@ -1,0 +1,53 @@
+﻿@model ToDoApp.Models.DTO.RegistrationModel
+@{
+    ViewBag.Title = "Registration";
+}
+
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+    <head>
+        <link href="@Url.Content("~/Styles/login.css")" rel="stylesheet" type="text/css" />
+        <script src="https://code.jquery.com/jquery-3.6.0.js"
+                integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+                crossorigin="anonymous"></script>
+        <script>
+            function signIn() {
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/x-www-form-urlencoded",
+                    url: "https://localhost:44370/api/user/register",
+                    data: $("#login-form").serialize(),
+                    success: function (data) {
+                        alert("Sign in is success!");
+                        window.location.replace("/Login/Login");
+                    }
+                });
+            }
+        </script>
+    </head>
+</head>
+<body>
+    <div id="login-form-wrap">
+        <h2>ToDoApp</h2>
+        <form id="login-form">
+            <p>
+                <input style="font-size: 12px" type="text" id="email" name="Email" placeholder="Email" required><i class="validation"><span></span><span></span></i>
+            </p>
+            <p>
+                <input style="font-size: 12px" type="password" id="password" name="Password" placeholder="Password" required><i class="validation"><span></span><span></span></i>
+            </p>
+            <p>
+                <input style="font-size: 12px" type="password" id="confrmPassword" name="ConfirmPassword" placeholder="Confirm Password" required><i class="validation"><span></span><span></span></i>
+            </p>
+            <p>
+                <input style="height: 5%" type="button" onclick="signIn()" id="login" value="Sign up">
+            </p>
+        </form>
+        <div id="create-account-wrap">
+            <p><a href="/Login/Login">Log in</a><p>
+        </div>
+    </div>
+</body>
+</html>
+

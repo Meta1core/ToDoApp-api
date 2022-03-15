@@ -1,0 +1,104 @@
+﻿@{
+    Layout = "~/Views/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+    <script type='text/javascript' src='~/Scripts/knockout-3.5.1.js'></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"
+            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+            crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp" rel="stylesheet">
+    <script>
+        var directories = ko.observableArray();
+        var applied = false;
+        if (localStorage.getItem('token') == null) {
+            alert("You are not logged in!");
+            window.location.replace("/Login/Login");
+        }
+        function afterLoading() {
+            getAllDirectories();
+        }
+        function getAllDirectories() {
+            $.ajax({
+                type: "GET",
+                contentType: "application/x-www-form-urlencoded",
+                url: "https://localhost:44370/api/directory/",
+                headers: { "Authorization": "Bearer " + localStorage.getItem('token') },
+                success: function (data) {
+                    directories.removeAll();
+                    getDirectory(data);
+                    console.log(data);
+                }
+            });
+        }
+        function getDirectory(data) {
+            for (var i = 0; i < data.length; i++) {
+                var directory = {
+                    directoryName: ko.observable(data[i].directoryName),
+                    id: ko.observable(data[i].id),
+                };
+                directories.push(directory);
+            }
+        }
+        function deleteDirectory(directory) {
+            console.log(directory);
+            let directoryId = ko.toJS(directory).id;
+            if (window.confirm("Do you really want to delete this directory?")) {
+                $.ajax({
+                    type: "DELETE",
+                    contentType: "application/x-www-form-urlencoded",
+                    url: "https://localhost:44370/api/directory/" + directoryId,
+                    headers: { "Authorization": "Bearer " + localStorage.getItem('token') },
+                    success: function (data) {
+                        getAllDirectories();
+                    }
+                });
+            }
+        }
+        function addDirectory() {
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/x-www-form-urlencoded",
+                    url: "https://localhost:44370/api/directory/",
+                    data: $("#task-form").serialize(),
+                    headers: { "Authorization": "Bearer " + localStorage.getItem('token') },
+                    success: function (data) {
+                        getAllDirectories();
+                        $("#directoryName").val('');
+                    }
+                });
+        }
+        $(document).ready(function () {
+            if (localStorage.getItem('token') == 'null') {
+                alert("You are not logged in!");
+                window.location.replace("/Login/Login");
+            }
+            ko.applyBindings();
+        });
+    </script>
+</head>
+<body onload="afterLoading()">
+    <div class="w3-sidebar w3-light-grey w3-bar-block" style="width: 118px">
+        <a href="/Home/NewTask" class="w3-bar-item w3-button">New task</a>
+        <a onclick="editTask()" class="w3-bar-item w3-button">Edit task</a>
+        <a onclick="deleteTask()" class="w3-bar-item w3-button">Delete task</a>
+    </div>
+    <div data-bind="foreach: directories" style="margin-left: 110px">
+        <ul>
+            <li data-bind="text: directoryName"></li>
+            <span class="material-icons-outlined" style="cursor: pointer" data-bind="click: deleteDirectory.bind($data)">delete</span>
+        </ul>
+    </div>
+    <form id="task-form">
+        <div class="directory_add" style="margin-left: 130px">
+            <input id="directoryName" name ="directoryName" type="text" placeholder="Directory Name" />
+            <span class="material-icons" style="font-size: 30px; vertical-align: middle; cursor: pointer" data-bind="click: addDirectory.bind()">add_circle_outline</span>
+        </div>
+    </form>
+</body>
+</html>

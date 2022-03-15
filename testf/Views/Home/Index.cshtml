@@ -1,3 +1,329 @@
-﻿<div>
-    <h3>ASP.NET WEB API is working</h3>
-</div>
+﻿@{
+    Layout = "~/Views/_Layout.cshtml";
+}
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <script type='text/javascript' src='~/Scripts/knockout-3.5.1.js'></script>
+    <script type='text/javascript' src='~/Scripts/moment.min.js'></script>
+    <link href="@Url.Content("~/Styles/index.css")" rel="stylesheet" type="text/css" />
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js"
+            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/signalr.js/2.4.3/jquery.signalR.min.js" integrity="sha512-GA74ohU6Jbe86KnYUjZvXq73wkBbhxNJ0vWBrZ/fU8cO+pAqaw6zi833NAnzAgRf7YSaqa9QB4TX3VLns/J9uw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <script type="text/javascript">
+        var tasks = ko.observableArray();
+        var userDirectories = ko.observableArray();
+        var currentIdTask = 0;
+        var count = 0;
+        var connection;
+        var proxy;
+
+        function afterLoading() {
+            $.ajax({
+                type: "GET",
+                contentType: "application/x-www-form-urlencoded",
+                url: "https://localhost:44370/api/tasks/",
+                headers: { "Authorization": "Bearer " + localStorage.getItem('token') },
+                success: function (data) {
+                    tasks.removeAll();
+                    getTask(data);
+                }
+            });
+            $.ajax({
+                type: "GET",
+                contentType: "application/x-www-form-urlencoded",
+                url: "https://localhost:44370/api/directory/",
+                headers: { "Authorization": "Bearer " + localStorage.getItem('token') },
+                success: function (data) {
+                    userDirectories.removeAll();
+                    getDirectory(data);
+                }
+            });
+        }
+        function getTask(data) {
+            for (var i = 0; i < data.length; i++) {
+                var task = {
+                    dateOfTaskParse: ko.observable(parseDate(data[i].dateOfTask)),
+                    dateOfTask: ko.observable(data[i].dateOfTask),
+                    description: ko.observable(data[i].description),
+                    directory: ko.observable(data[i].directory),
+                    header: ko.observable(data[i].header),
+                    id: ko.observable(data[i].id),
+                    isDone: ko.observable(data[i].isDone),
+                    isFavorite: ko.observable(data[i].isFavorite),
+                    isOverdue: ko.observable(data[i].isOverdue)
+                };
+                tasks.push(task);
+            }
+        }
+        function getDirectory(data) {
+            for (var i = 0; i < data.length; i++) {
+                var directory = {
+                    id: ko.observable(data[i].id),
+                    directoryName: ko.observable(data[i].directoryName),
+                    user: ko.observable(data[i].user.id)
+                };
+                userDirectories.push(directory);
+            }
+        }
+        function parseDate(date) {
+            if (date != null) {
+                var d = new Date(date);
+                return d.toLocaleString();
+            }
+            return null;
+
+        }
+        function selectTask(data) {
+            currentIdTask = ko.toJS(data).id;
+            checkSelectedTasks();
+            console.log(ko.toJS(data).id);
+        }
+        function checkSelectedTasks() {
+            checkboxes = document.getElementsByName('checkedTask');
+            count = 0;
+            for (var i = 0, n = checkboxes.length; i < n; i++) {
+                if (checkboxes[i].checked == true) {
+                    count++;
+                }
+            }
+            if (count == 0) {
+                currentIdTask = 0;
+            }
+            if (count > 1) {
+                currentIdTask = 0;
+                alert("You cannot select two or more tasks!");
+                clearCheckboxes();
+            }
+        }
+        function clearCheckboxes() {
+            for (var i = 0, n = checkboxes.length; i < n; i++) {
+                if (checkboxes[i].checked == true) {
+                    checkboxes[i].checked = false;
+                }
+            }
+            count = 0;
+        }
+        function deleteTask() {
+            if (currentIdTask != 0) {
+                if (window.confirm("Do you really want to delete this task?")) {
+                    $.ajax({
+                        type: "DELETE",
+                        contentType: "application/x-www-form-urlencoded",
+                        url: "https://localhost:44370/api/tasks/" + currentIdTask,
+                        headers: { "Authorization": "Bearer " + localStorage.getItem('token') },
+                        success: function (data) {
+                            alert("Selected task was deleted!");
+                            window.location.href = '/Home/Index/';
+                        }
+                    });
+                }
+            }
+            else {
+                alert("Please, choose a task!");
+            }
+        }
+        function editTask() {
+            if (currentIdTask != 0) {
+                window.location.href = "/Home/EditTask/?task=" + currentIdTask;
+            }
+            else {
+                alert("Please, choose a task!");
+            }
+        }
+
+        function completeTask() {
+            if (currentIdTask != 0) {
+                if (window.confirm("Do you really want to complete this task?")) {
+                    ko.toJS(tasks).forEach(function (item, index) {
+                        if (item.id == currentIdTask) {
+                            item.isDone = true;
+                            item.isOverdue = false;
+                            console.log(item);
+                            $.ajax({
+                                type: "PUT",
+                                contentType: "application/x-www-form-urlencoded",
+                                url: "https://localhost:44370/api/tasks/",
+                                data: item,
+                                headers: { "Authorization": "Bearer " + localStorage.getItem('token') },
+                                success: function (data) {
+                                    afterLoading();
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+            else {
+                alert("Please, choose a task!");
+            }
+        }
+
+        function getTasksInDirectory(data) {
+            $.ajax({
+                type: "GET",
+                contentType: "application/x-www-form-urlencoded",
+                url: "https://localhost:44370/api/tasks/indirectory/" + ko.toJS(data).id,
+                headers: { "Authorization": "Bearer " + localStorage.getItem('token') },
+                success: function (data) {
+                    tasks.removeAll();
+                    getTask(data);
+                }
+            });
+        }
+
+        function goToDirectoriesPage() {
+            window.location.href = "/Home/DirectoriesPage/";
+        }
+        function IsDone(data) {
+            if (ko.toJS(data).isDone) {
+                return true;
+            }
+            return false;
+        }
+        function IsOverdue(data) {
+            if (ko.toJS(data).isOverdue) {
+                return true;
+            }
+            return false;
+        }
+        function startTimer() {
+            setInterval(function () {
+                refreshData();
+            }, 10000);
+        }
+        function refreshData() {
+            $.ajax({
+                type: "GET",
+                contentType: "application/x-www-form-urlencoded",
+                url: "https://localhost:44370/api/tasks/completed/",
+                headers: { "Authorization": "Bearer " + localStorage.getItem('token') },
+                success: function (data) {
+                }
+            });
+            $.ajax({
+                type: "GET",
+                contentType: "application/x-www-form-urlencoded",
+                url: "https://localhost:44370/api/tasks/overdue/",
+                headers: { "Authorization": "Bearer " + localStorage.getItem('token') },
+                success: function (data) {
+                }
+            });
+        }
+
+        function startConnection() {
+            this.connection = $.hubConnection();
+            this.proxy = this.connection.createHubProxy('taskHub');
+            this.proxy.on('sendNotification', (serverMessage) => {
+                afterLoading();
+            });
+            this.connection.start().done((data) => {
+                console.log('Connected to Notification Hub');
+            }).catch((error) => {
+                console.log('Notification Hub error -> ' + error);
+            });
+        }
+        $(document).ready(function () {
+            if (localStorage.getItem('token') == 'null') {
+                alert("You are not logged in!");
+                window.location.replace("/Login/Login");
+            }
+            startConnection();
+            ko.applyBindings();
+        });
+
+    </script>
+    <style>
+        .card-header {
+            color: black;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            border-bottom: 1px solid black;
+            background-color: #b7d7ff;
+            padding: 3px 10px;
+        }
+
+            .card-header span {
+                background-color: #b7d7ff;
+            }
+
+        .taskDone {
+            color: black;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            border-bottom: 1px solid black;
+            background-color: #8af167;
+            padding: 3px 10px;
+        }
+
+            .taskDone span {
+                background-color: #8af167;
+            }
+
+        .taskOverdue {
+            color: black;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            border-bottom: 1px solid black;
+            background-color: #ef5e5e;
+            padding: 3px 10px;
+        }
+
+            .taskOverdue span {
+                background-color: #ef5e5e;
+            }
+
+        .card, .card-date, .card-date p, .card-checkbox, .card-main, .card-main p {
+            background-color: #F0F0F0;
+        }
+    </style>
+</head>
+<body onload="afterLoading()">
+    <div class="w3-sidebar w3-light-grey w3-bar-block" style="width: 111px">
+        <a href="/Home/NewTask" class="w3-bar-item w3-button" style="text-align: center">New task</a>
+        <a onclick="editTask()" class="w3-bar-item w3-button" style="text-align: center">Edit task</a>
+        <a onclick="deleteTask()" class="w3-bar-item w3-button" style="text-align: center">Delete task</a>
+        <a onclick="completeTask()" class="w3-bar-item w3-button" style="text-align: center">Complete task</a>
+    </div>
+    <div class="w3-sidebar w3-light-grey w3-bar-block" style="width: 84px; right: 0">
+        <a class="w3-bar-item w3-button" onclick="goToDirectoriesPage()">
+            <div class="material-icons-outlined" style="background-color: #F0F0F0 ">
+                create_new_folder
+            </div>
+        </a>
+        <div data-bind="foreach: userDirectories" style="background-color: #F0F0F0 ">
+            <a class="w3-bar-item w3-button" data-bind="click: getTasksInDirectory.bind($data)">
+                <span class="material-icons-outlined" style="background-color: #F0F0F0 ">
+                    folder
+                </span>
+                <span data-bind="text: directoryName" style="background-color: #F0F0F0; font-size: 12px "> </span>
+            </a>
+        </div>
+    </div>
+    <div style="padding-left: 120px">
+        <div data-bind="foreach: tasks" style="min-width: 110px; margin-left: auto; margin-right: auto;">
+            <div class="card" data-bind="click : selectTask($data)" style="display: inline-block;">
+                <div class="card-header" data-bind="css: {'taskDone' :  IsDone($data), 'taskOverdue':  IsOverdue($data) }"><span data-bind="text: header"></span></div>
+                <div class="card-main">
+                    <p data-bind="text: description"></p>
+                </div>
+                <div class="card-date">
+                    <p data-bind="text: dateOfTaskParse"></p>
+                </div>
+                <div class="card-checkbox">
+                    <input name="checkedTask" type="checkbox" data-binding="checked : SelectTask($data)" />
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

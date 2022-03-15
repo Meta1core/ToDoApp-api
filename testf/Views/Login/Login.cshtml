@@ -1,0 +1,53 @@
+﻿@model ToDoApp.Models.DTO.LoginModel
+@{
+    ViewBag.Title = "Login";
+}
+
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+    <head>
+        <link href="@Url.Content("~/Styles/login.css")" rel="stylesheet" type="text/css" />
+        <script src="https://code.jquery.com/jquery-3.6.0.js"
+                integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+                crossorigin="anonymous"></script>
+    </head>
+    <script>
+        function test() {
+            $.ajax({
+                type: "POST",
+                contentType: "application/x-www-form-urlencoded",
+                url: "https://localhost:44370/token",
+                data: $("#login-form").serialize(),
+                success: function (data) {
+                    window.localStorage.setItem("token", data.access_token);
+                    alert("Success!");
+                    window.location.replace("/Home/Index");
+                }
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <div id="login-form-wrap">
+        <h2>ToDoApp</h2>
+        <form enctype="application/x-www-form-urlencoded" id="login-form">
+            <input style="display: none" type="text" name="grant_type" value="password"/>
+            <p>
+                <input style="font-size: 12px" type="text" id="username" name="username" placeholder="Email" required><i class="validation"><span></span><span></span></i>
+            </p>
+            <p>
+                <input style="font-size: 12px" type="password" id="password" name="password" placeholder="Password" required><i class="validation"><span></span><span></span></i>
+            </p>
+            <p>
+                <input style="height: 5%" onclick="test()" type="button" id="login" value="Login">
+            </p>
+        </form>
+        <div id="create-account-wrap">
+            <p><a href="/Login/Registration">Create Account</a><p>
+        </div>
+    </div>
+</body>
+</html>
+

@@ -1,16 +1,14 @@
-﻿using System;
-using Microsoft.AspNet.Identity;
+﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
-using Microsoft.Owin.Security.Google;
 using Microsoft.Owin.Security.OAuth;
 using Owin;
-using ToDoApp.Providers;
+using System;
 using System.Web.Http;
-using ToDoApp;
-using ToDoApp.Models;
 using ToDoApp.App_Start;
+using ToDoApp.Models;
+using ToDoApp.Providers;
 
 [assembly: OwinStartupAttribute(typeof(ToDoApp.Startup))]
 namespace ToDoApp

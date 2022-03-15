@@ -1,0 +1,133 @@
+﻿@{
+    Layout = "~/Views/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <script type='text/javascript' src='~/Scripts/moment.min.js'></script>
+    <script type='text/javascript' src='~/Scripts/knockout-3.5.1.js'></script>
+    <link href="@Url.Content("~/Styles/newtask.css")" rel="stylesheet" type="text/css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.js"
+            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+            crossorigin="anonymous"></script>
+    <title></title>
+    <script>
+        var task;
+        var directories = ko.observableArray();
+        function loadInfo() {
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const taskParamValue = urlParams.get('task')
+            getUserDirectories();
+            $.ajax({
+                type: "GET",
+                contentType: "application/x-www-form-urlencoded",
+                url: "https://localhost:44370/api/tasks/" + taskParamValue,
+                headers: { "Authorization": "Bearer " + localStorage.getItem('token') },
+                success: function (data) {
+                    task = {
+                        dateOfTask: parseDate(data.dateOfTask),
+                        description: data.description,
+                        directory: data.directory,
+                        header: data.header,
+                        id: data.id,
+                        isDone: data.isDone,
+                        isFavorite: data.isFavorite,
+                        isOverdue: data.isOverdue
+                    };
+                    console.log(task);
+                    $("#Header").val(task.header.toString());
+                    $("#Description").val(task.description.toString());
+                    $("#Id").val(task.id);
+                    $("#dateOfTask").val(moment(task.dateOfTask).format("YYYY-MM-DDTkk:mm"));
+                    $("#directoryList").val(task.directory.id);
+                }
+            });
+        }
+
+        function updateTask() {
+            task.Directory_Id = $("#directoryList").val();
+            console.log(task);
+            $.ajax({
+                type: "PUT",
+                contentType: "application/x-www-form-urlencoded",
+                url: "https://localhost:44370/api/tasks/",
+                data: task,
+                headers: { "Authorization": "Bearer " + localStorage.getItem('token') },
+                success: function (data) {
+                    alert("Success!");
+                    window.location.replace("/Home/Index");
+                }
+            });
+        }
+        function getUserDirectories() {
+            $.ajax({
+                type: "GET",
+                contentType: "application/x-www-form-urlencoded",
+                url: "https://localhost:44370/api/directory/",
+                headers: { "Authorization": "Bearer " + localStorage.getItem('token') },
+                success: function (data) {
+                    directories.removeAll();
+                    getDirectory(data);
+                }
+            });
+
+        }
+        function getDirectory(data) {
+            addDefaultOptionToSelect();
+            for (var i = 0; i < data.length; i++) {
+                var directory = {
+                    id: ko.observable(data[i].id),
+                    directoryName: ko.observable(data[i].directoryName),
+                    user: ko.observable(data[i].user.id)
+                };
+                directories.push(directory);
+            }
+        }
+        function parseDate(date) {
+            var d = new Date(date);
+            return d.toUTCString();
+
+        }
+        function addDefaultOptionToSelect() {
+            let empty_directory = {
+                id: 0,
+                directoryName: 'Empty'
+            }
+            directories.push(empty_directory);
+        }
+        $(document).ready(function () {
+            if (localStorage.getItem('token') == 'null') {
+                alert("You are not logged in!");
+                window.location.replace("/Login/Login");
+            }
+            ko.applyBindings();
+        });
+    </script>
+</head>
+<body onload="loadInfo()">
+    <div style="margin-left: 10%; margin-top: 10px;">
+        <div class="form-style-5">
+            <form id="task-form">
+                <fieldset>
+                    <legend>Here is what is in your task:</legend>
+                    <input type="text" name="Id" id="Id" placeholder="Id" hidden>
+                    <input type="text" name="Header" id="Header" placeholder="Header">
+                    <input type="text" name="Description" id="Description" placeholder="Description">
+                    <label for="directoryList">Directories:</label>
+                    <select data-bind="options: directories, optionsText: 'directoryName', optionsValue: 'id', value : 'id'" id="directoryList" name="Directory_Id">
+                    </select>
+                    <label for="datepicker">Date:</label>
+                    <input id="dateOfTask" name="DateOfTask" type="datetime-local" min="2022-01-01" max="9999-12-31">
+                </fieldset>
+                <input type="button" onclick="updateTask()" value="Apply changes" />
+            </form>
+        </div>
+    </div>
+</body>
+</html>

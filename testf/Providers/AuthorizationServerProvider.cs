@@ -1,22 +1,10 @@
-﻿using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.AspNet.Identity.Owin;
-using Microsoft.Owin.Security;
-using Microsoft.Owin.Security.Cookies;
-using Microsoft.Owin.Security.OAuth;
+﻿using Microsoft.Owin.Security.OAuth;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
-using System.Web;
-using ToDoApp.Models;
-using ToDoApp.Controllers;
-using ToDoApp.App_Start;
-using Microsoft.AspNet.Identity;
-using BCryptNet = BCrypt.Net.BCrypt;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
+using ToDoApp.Models;
 
 namespace ToDoApp.Providers
 {
@@ -80,12 +68,27 @@ namespace ToDoApp.Providers
         }
         public static bool ByteArraysEqual(byte[] b1, byte[] b2)
         {
-            if (b1 == b2) return true;
-            if (b1 == null || b2 == null) return false;
-            if (b1.Length != b2.Length) return false;
+            if (b1 == b2)
+            {
+                return true;
+            }
+
+            if (b1 == null || b2 == null)
+            {
+                return false;
+            }
+
+            if (b1.Length != b2.Length)
+            {
+                return false;
+            }
+
             for (int i = 0; i < b1.Length; i++)
             {
-                if (b1[i] != b2[i]) return false;
+                if (b1[i] != b2[i])
+                {
+                    return false;
+                }
             }
             return true;
         }

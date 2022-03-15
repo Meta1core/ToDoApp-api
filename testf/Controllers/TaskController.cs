@@ -1,21 +1,13 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Owin;
-using Microsoft.Owin.Security;
-using System.Globalization;
 using System.Security.Claims;
-using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
-using ToDoApp.Providers;
-using ToDoApp.Models;
-using System.Data.Entity;
-using MySql.Data.MySqlClient;
 using ToDoApp.Hubs;
+using ToDoApp.Models;
+using ToDoApp.Providers;
 
 namespace ToDoApp.Controllers
 {
@@ -158,7 +150,7 @@ namespace ToDoApp.Controllers
                 MySqlParameter userIdParam = new MySqlParameter("@User_Id", user.Id);
                 MySqlParameter directoryIdParam;
                 if (!updatingTaskModel.Directory_Id.Equals(0))
-                { 
+                {
                     directoryIdParam = new MySqlParameter("@Directory_Id", updatingTaskModel.Directory_Id);
                 }
                 else
@@ -169,8 +161,9 @@ namespace ToDoApp.Controllers
                 MySqlParameter descriptionParam = new MySqlParameter("@Description", updatingTaskModel.Description);
                 MySqlParameter isDoneParam = new MySqlParameter("@IsDone", updatingTaskModel.IsDone);
                 MySqlParameter isFavoriteParam = new MySqlParameter("@IsFavorite", updatingTaskModel.IsFavorite);
+                MySqlParameter isOverdueParam = new MySqlParameter("@IsOverdue", updatingTaskModel.IsOverdue);
                 MySqlParameter dateOfTaskParam = new MySqlParameter("@DateOfTask", updatingTaskModel.DateOfTask);
-                DbContext.Database.ExecuteSqlCommand("Call ToDoTask_Update(@Id, @User_Id, @Directory_Id, @Header, @Description, @IsDone, @IsFavorite, @DateOfTask)", taskIdParam, userIdParam, directoryIdParam, headerParam, descriptionParam, isDoneParam, isFavoriteParam, dateOfTaskParam);
+                DbContext.Database.ExecuteSqlCommand("Call ToDoTask_Update(@Id, @User_Id, @Directory_Id, @Header, @Description, @IsDone, @IsOverdue, @IsFavorite, @DateOfTask)", taskIdParam, userIdParam, directoryIdParam, headerParam, descriptionParam, isDoneParam, isOverdueParam, isFavoriteParam, dateOfTaskParam);
 
                 Hub.Clients.All.sendNotification();
                 return new HttpResponseMessage(HttpStatusCode.OK);

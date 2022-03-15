@@ -1,0 +1,44 @@
+﻿* {
+    font-family: 'Open Sans', sans-serif;
+}
+
+.container {
+}
+
+.card {
+    display: inline-block;
+    width: 150px;
+    border: 1px solid black;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 2.5px;
+}
+
+.card-main {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    border-bottom: 1px solid black;
+    padding: 3px 10px;
+}
+
+.card-date {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    border-bottom: 1px solid black;
+    padding: 3px 10px;
+    margin: 0;
+    padding: 0;
+}
+
+.card-checkbox {
+    vertical-align: 10px;
+    padding-left: 45%;
+}
+
+.main-description {
+    color: #D32F2F;
+    font-size: 12px;
+    text-align: center;
+}
